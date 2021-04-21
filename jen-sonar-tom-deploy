@@ -1,0 +1,36 @@
+pipeline{
+    agent any
+    environment{
+        PATH ="/opt/maven/bin:$PATH"
+   }
+    stages{
+        stage('git'){
+            steps{
+                git "https://github.com/pravingajula/hello-world.git"
+            }
+        }
+        stage('build'){
+            steps{
+                sh "mvn clean package"
+            }
+        }
+        stage('sonar'){
+            steps{
+                withSonarQubeEnv('sonarqube'){
+    
+                    sh "mvn sonar:sonar"
+                }
+    
+                
+            }
+        }
+        stage('deploy'){
+            steps{
+                sshagent(['deploy']) {
+                sh "scp -o StrictHostKeyChecking=no webapp/target/webapp.war ubuntu@65.2.126.74:/opt/tomcat/webapps"
+}
+                
+            }
+        }
+    }  
+}
